@@ -45,13 +45,13 @@ import re
 class Error(Exception):
     pass
 
+DEFAULT_CONFIG_PARSER = ConfigParser.ConfigParser
+
 class MetaConfig(object):
     def __init__(self):
         self._configs = {}
 
-    def add_config_file(self, name, path, ConfigClass=None):
-        if ConfigClass is None:
-            ConfigClass = ConfigParser.ConfigParser
+    def add_config_file(self, name, path, ConfigClass=DEFAULT_CONFIG_PARSER):
 
         conf = ConfigClass()
         conf.read([path])
@@ -59,9 +59,7 @@ class MetaConfig(object):
         return self.add_config(name, conf)
 
 
-    def add_config_fh(self, name, fileobj, ConfigClass=None):
-        if ConfigClass is None:
-            ConfigClass = ConfigParser.ConfigParser
+    def add_config_fh(self, name, fileobj, ConfigClass=DEFAULT_CONFIG_PARSER):
 
         conf = ConfigClass()
         conf.readfp(fileobj)
@@ -71,7 +69,8 @@ class MetaConfig(object):
     def add_config(self, name, config_parser):
         self._configs[name] = config_parser
 
-    def get_config(self, name):
+    def get_config(self, name, ConfigClass=DEFAULT_CONFIG_PARSER):
+
         parts = name.split('.')
         while parts:
             name1 = '.'.join(parts)
@@ -79,7 +78,7 @@ class MetaConfig(object):
                 return self._configs[name1]
             except KeyError:
                 parts = parts[:-1]
-        raise Error('Config matching %s not found' % name)
+        return ConfigClass()
             
     def clear(self):
         self._configs = {}
@@ -111,7 +110,10 @@ class MetaConfig(object):
 
     @classmethod
     def from_config_file(Class, config_file):
-        raise NotImplementedError
+        cnf = DEFAULT_CONFIG_PARSER()
+        cnf.read(config_file)
+
+        return Class.from_config(cnf)
 
     @classmethod
     def from_config_fh(Class, config_fh):

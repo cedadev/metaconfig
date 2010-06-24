@@ -80,9 +80,8 @@ class Test1(TestCase):
         assert conf.get('foo', 'a') == '42'
 
     def test_2(self):
-        def f(mf):
-            conf = mf.get_config('x')
-        self.assertRaises(Error, f, self.mf)
+        conf = self.mf.get_config('x')
+        assert conf.sections() == []
 
     def test_3(self):
         conf = self.mf.get_config('p1.p2')

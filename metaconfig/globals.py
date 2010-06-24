@@ -10,11 +10,17 @@ State global to the whole package.
 
 """
 
-import sys, re
+import sys, re, os
 
 from metaconfig.mconf import MetaConfig
 
-_default_metaconfig = MetaConfig()
+_default_metaconfigfile = os.environ.get('METACONFIG_CONF',
+                                         os.path.join(
+        os.environ.get('HOME', ''), '.metaconfig.conf'))
+
+_default_metaconfig = MetaConfig.from_config_file(_default_metaconfigfile)
+
+
 
 def get_config(name):
     return _default_metaconfig.get_config(name)

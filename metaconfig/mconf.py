@@ -1,3 +1,10 @@
+# BSD Licence
+# Copyright (c) 2010, Science & Technology Facilities Council (STFC)
+# All rights reserved.
+#
+# See the LICENSE file in the source distribution of this software for
+# the full license text.
+
 """
 metaconfig
 ----------
@@ -13,11 +20,6 @@ import metaconfig
 config = metaconfig.get_config(__name__)
 }}}
 
-configs can be specified on the command line:
-$ python --config=foo.bar:file
-
-Or via a master config file
-$ python --metaconfig=file
 
 These options are bootstraped on entry into Python as:
 
@@ -38,17 +40,18 @@ or something like that
 
 import sys
 import ConfigParser
+import re
 
 class Error(Exception):
     pass
+
+DEFAULT_CONFIG_PARSER = ConfigParser.ConfigParser
 
 class MetaConfig(object):
     def __init__(self):
         self._configs = {}
 
-    def add_config_file(self, name, path, ConfigClass=None):
-        if ConfigClass is None:
-            ConfigClass = ConfigParser.ConfigParser
+    def add_config_file(self, name, path, ConfigClass=DEFAULT_CONFIG_PARSER):
 
         conf = ConfigClass()
         conf.read([path])
@@ -56,9 +59,7 @@ class MetaConfig(object):
         return self.add_config(name, conf)
 
 
-    def add_config_fh(self, name, fileobj, ConfigClass=None):
-        if ConfigClass is None:
-            ConfigClass = ConfigParser.ConfigParser
+    def add_config_fh(self, name, fileobj, ConfigClass=DEFAULT_CONFIG_PARSER):
 
         conf = ConfigClass()
         conf.readfp(fileobj)
@@ -68,7 +69,8 @@ class MetaConfig(object):
     def add_config(self, name, config_parser):
         self._configs[name] = config_parser
 
-    def get_config(self, name):
+    def get_config(self, name, ConfigClass=DEFAULT_CONFIG_PARSER):
+
         parts = name.split('.')
         while parts:
             name1 = '.'.join(parts)
@@ -76,21 +78,45 @@ class MetaConfig(object):
                 return self._configs[name1]
             except KeyError:
                 parts = parts[:-1]
-        raise Error('Config matching %s not found' % name)
+        return ConfigClass()
             
     def clear(self):
         self._configs = {}
 
     @classmethod
-    def from_config(self, config_parser):
-        raise NotImplementedError
+    def from_config(Class, config_parser):
+        mf = Class()
+
+        configs = config_parser.get('metaconfig', 'configs').split()
+        D = {}
+        for section in config_parser.sections():
+            mo = re.match(r'(.*):(.*)', section)
+            if not mo:
+                continue
+            
+            prefix, ssec = mo.groups()
+            D.setdefault(prefix, []).append(ssec)
+
+        for config in configs:
+            cp = ConfigParser.ConfigParser()
+            for ssec in D[config]:
+                cp.add_section(ssec)
+                sec = '%s:%s' % (config, ssec)
+                for option in config_parser.options(sec):
+                    cp.set(ssec, option, config_parser.get(sec, option))
+            mf.add_config(config, cp)
+
+        return mf
 
     @classmethod
-    def from_config_file(self, config_file):
-        raise NotImplementedError
+    def from_config_file(Class, config_file):
+        cnf = DEFAULT_CONFIG_PARSER()
+        cnf.read(config_file)
+
+        return Class.from_config(cnf)
 
     @classmethod
-    def from_config_fh(self, config_fh):
+    def from_config_fh(Class, config_fh):
         raise NotImplementedError
 
 

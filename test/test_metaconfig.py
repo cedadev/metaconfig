@@ -1,3 +1,10 @@
+# BSD Licence
+# Copyright (c) 2010, Science & Technology Facilities Council (STFC)
+# All rights reserved.
+#
+# See the LICENSE file in the source distribution of this software for
+# the full license text.
+
 """
 Metaconfig tests.
 
@@ -9,6 +16,7 @@ import os
 
 from unittest import TestCase
 import tempfile
+from cStringIO import StringIO
 
 import ConfigParser
 
@@ -27,6 +35,38 @@ def _make_test_config(**kwargs):
 
     return conf
 
+_metaconfig_pat = """
+
+[metaconfig]
+configs = p1 p1.p2
+
+[p1:foo]
+a = 42
+b = line 1
+    line 2
+
+[p1:bar]
+%s
+
+[p1.p2:foo]
+a = 12
+b = no
+c = yes
+
+"""
+
+def _make_metaconfig(**kwargs):
+    args = '\n'.join('%s = %s' % (k, kwargs[k]) for k in kwargs)
+    text = _metaconfig_pat % args
+    fh = StringIO()
+    fh.write(text)
+    fh.seek(0)
+
+    mf = ConfigParser.ConfigParser()
+    mf.readfp(fh)
+
+    return mf
+
 
 class Test1(TestCase):
     def setUp(self):
@@ -40,9 +80,8 @@ class Test1(TestCase):
         assert conf.get('foo', 'a') == '42'
 
     def test_2(self):
-        def f(mf):
-            conf = mf.get_config('x')
-        self.assertRaises(Error, f, self.mf)
+        conf = self.mf.get_config('x')
+        assert conf.sections() == []
 
     def test_3(self):
         conf = self.mf.get_config('p1.p2')
@@ -82,5 +121,15 @@ class Test2(TestCase):
 
         conf = self.mf.get_config('p1')
     
+        assert conf.get('foo', 'a') == '42'
+        assert conf.get('bar', 'x') == '1'
+
+class Test3(TestCase):
+    def setUp(self):
+        self.mf = MetaConfig.from_config(_make_metaconfig(x='1'))
+
+    def test_1(self):
+        conf = self.mf.get_config('p1')
+        
         assert conf.get('foo', 'a') == '42'
         assert conf.get('bar', 'x') == '1'

@@ -13,11 +13,6 @@ import metaconfig
 config = metaconfig.get_config(__name__)
 }}}
 
-configs can be specified on the command line:
-$ python --config=foo.bar:file
-
-Or via a master config file
-$ python --metaconfig=file
 
 These options are bootstraped on entry into Python as:
 
@@ -38,6 +33,7 @@ or something like that
 
 import sys
 import ConfigParser
+import re
 
 class Error(Exception):
     pass
@@ -82,15 +78,36 @@ class MetaConfig(object):
         self._configs = {}
 
     @classmethod
-    def from_config(self, config_parser):
+    def from_config(Class, config_parser):
+        mf = Class()
+
+        configs = config_parser.get('metaconfig', 'configs').split()
+        D = {}
+        for section in config_parser.sections():
+            mo = re.match(r'(.*):(.*)', section)
+            if not mo:
+                continue
+            
+            prefix, ssec = mo.groups()
+            D.setdefault(prefix, []).append(ssec)
+
+        for config in configs:
+            cp = ConfigParser.ConfigParser()
+            for ssec in D[config]:
+                cp.add_section(ssec)
+                sec = '%s:%s' % (config, ssec)
+                for option in config_parser.options(sec):
+                    cp.set(ssec, option, config_parser.get(sec, option))
+            mf.add_config(config, cp)
+
+        return mf
+
+    @classmethod
+    def from_config_file(Class, config_file):
         raise NotImplementedError
 
     @classmethod
-    def from_config_file(self, config_file):
-        raise NotImplementedError
-
-    @classmethod
-    def from_config_fh(self, config_fh):
+    def from_config_fh(Class, config_fh):
         raise NotImplementedError
 
 

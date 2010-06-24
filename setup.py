@@ -12,8 +12,12 @@ __version__ = '0.1'
 
 setup(name='metaconfig',
       version=__version__,
-      description="A configuration management library",
-      classifiers=[], # Get strings from http://pypi.python.org/pypi?%3Aaction=list_classifiers
+      description="A ConfigParser bootstraping library",
+      classifiers=[
+        'Development Status :: 3 - Alpha',
+        'License :: OSI Approved :: BSD License',
+        'Topic :: Software Development :: Libraries',
+        ], 
       keywords='',
       author='Stephen Pascoe',
       author_email='Stephen.Pascoe@stfc.ac.uk',

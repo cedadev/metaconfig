@@ -8,7 +8,7 @@
 from setuptools import setup, find_packages
 import sys, os
 
-__version__ = '0.1'
+__version__ = '0.1.1'
 __description__ = """
 
 Metaconfig

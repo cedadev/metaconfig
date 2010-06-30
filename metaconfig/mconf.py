@@ -87,24 +87,8 @@ class MetaConfig(object):
     def from_config(Class, config_parser):
         mf = Class()
 
-        configs = config_parser.get('metaconfig', 'configs').split()
-        D = {}
-        for section in config_parser.sections():
-            mo = re.match(r'(.*):(.*)', section)
-            if not mo:
-                continue
-            
-            prefix, ssec = mo.groups()
-            D.setdefault(prefix, []).append(ssec)
-
-        for config in configs:
-            cp = ConfigParser.ConfigParser()
-            for ssec in D[config]:
-                cp.add_section(ssec)
-                sec = '%s:%s' % (config, ssec)
-                for option in config_parser.options(sec):
-                    cp.set(ssec, option, config_parser.get(sec, option))
-            mf.add_config(config, cp)
+        mf._parse_nested_configs(config_parser)
+        mf._parse_external_configs(config_parser)
 
         return mf
 
@@ -121,3 +105,42 @@ class MetaConfig(object):
 
 
         
+    def _parse_nested_configs(self, config_parser):
+        """
+        Parse configs embedded in the metaconfig file.
+        """
+        if not config_parser.has_option('metaconfig', 'configs'):
+            return
+
+        configs = config_parser.get('metaconfig', 'configs').split()
+        D = {}
+        for section in config_parser.sections():
+            mo = re.match(r'(.+?):(.*)', section)
+            if not mo:
+                continue
+
+            prefix, ssec = mo.groups()
+            D.setdefault(prefix, []).append(ssec)
+
+        for config in configs:
+            cp = ConfigParser.ConfigParser()
+            for ssec in D[config]:
+                cp.add_section(ssec)
+                sec = '%s:%s' % (config, ssec)
+                for option in config_parser.options(sec):
+                    cp.set(ssec, option, config_parser.get(sec, option, 
+                                                           raw=True))
+
+            self.add_config(config, cp)
+
+    def _parse_external_configs(self, config_parser):
+        """
+        Parse external config files referenced in metaconfig.conf.
+        """
+
+        if not config_parser.has_option('metaconfig', 'config-files'):
+            return
+
+        config_files = config_parser.get('metaconfig', 'config-files').split()
+        for cf in config_files:
+            self.add_config_file(cf)

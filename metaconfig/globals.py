@@ -14,24 +14,45 @@ import sys, re, os
 
 from metaconfig.mconf import MetaConfig
 
-_default_metaconfigfile = os.environ.get('METACONFIG_CONF',
-                                         os.path.join(
-        os.environ.get('HOME', ''), '.metaconfig.conf'))
+import logging
+log = logging.getLogger(__name__)
 
-_default_metaconfig = MetaConfig.from_config_file(_default_metaconfigfile)
+def _get_metaconfigfile():
+    try_configs = [os.path.join(os.environ.get('HOME', ''), '.metaconfig.conf'),
+                   os.path.join(sys.prefix, 'etc', 'metaconfig.conf')]
+    if 'METACONFIG_CONF' in os.environ:
+        try_configs[0:] = [(os.environ['METACONFIG_CONF'])]
 
+    for config in try_configs:
+        if os.path.exists(config):
+            log.debug('Selected %s as metaconfig.conf' % config)
+            return config
+    else:
+        return None
+
+def reload():
+    global _metaconfig
+
+    _metaconfig_file = _get_metaconfigfile()
+    if _metaconfig_file is None:
+        _metaconfig = MetaConfig()
+    else:
+        _metaconfig = MetaConfig.from_config_file(_metaconfig_file)
 
 
 def get_config(name):
-    return _default_metaconfig.get_config(name)
+    return _metaconfig.get_config(name)
 
 def add_config(name, config_parser):
-    return _default_metaconfig.add_config(name, config_parser)
+    return _metaconfig.add_config(name, config_parser)
 
 def add_config_file(name, config, ConfigClass=None):
-    return _default_metaconfig.add_config_file(name, config, ConfigClass)
+    return _metaconfig.add_config_file(name, config, ConfigClass)
 
             
 def clear():
-    return _default_metaconfig.clear()
+    return _metaconfig.clear()
     
+
+## Bootstrap
+reload()

@@ -10,7 +10,7 @@ import tempfile
 import os
 
 from test_metaconfig import _make_metaconfig
-from metaconfig import get_config, clear, reload
+from metaconfig import get_config, reset
 
 
 def setup():
@@ -23,10 +23,9 @@ def setup():
     fh.close()
 
     os.environ['METACONFIG_CONF'] = config_file
-    reload()
 
 def teardown():
-    clear()
+    reset()
     os.remove(config_file)
 
 

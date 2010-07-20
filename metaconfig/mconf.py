@@ -70,7 +70,10 @@ class MetaConfig(object):
         return self.add_config(name, conf)
 
     def add_config(self, name, config_parser):
-        self._configs[name] = config_parser
+        if name in self._configs:
+            Error("Config %s already exists" % name)
+        else:
+            self._configs[name] = config_parser
 
     def get_config(self, name, ConfigClass=DEFAULT_CONFIG_PARSER, inherit=True):
         log.debug('Requested config %s, inherit=%s' % (name, inherit))
@@ -100,8 +103,8 @@ class MetaConfig(object):
         self._configs = {}
 
     @classmethod
-    def from_config(Class, config_parser):
-        mf = Class()
+    def from_config(klass, config_parser):
+        mf = klass()
 
         mf._parse_nested_configs(config_parser)
         mf._parse_external_configs(config_parser)
@@ -109,15 +112,18 @@ class MetaConfig(object):
         return mf
 
     @classmethod
-    def from_config_file(Class, config_file):
+    def from_config_file(klass, config_file):
         cnf = DEFAULT_CONFIG_PARSER()
         cnf.read(config_file)
 
-        return Class.from_config(cnf)
+        return klass.from_config(cnf)
 
     @classmethod
-    def from_config_fh(Class, config_fh):
-        raise NotImplementedError
+    def from_config_fh(klass, config_fh):
+        cnf = DEFAULT_CONFIG_PARSER()
+        cnf.readfp(config_fh)
+        
+        return klass.from_config(cnf)
 
 
         
@@ -153,10 +159,11 @@ class MetaConfig(object):
         """
         Parse external config files referenced in metaconfig.conf.
         """
-
-        if not config_parser.has_option('metaconfig', 'config-files'):
-            return
-
-        config_files = config_parser.get('metaconfig', 'config-files').split()
-        for cf in config_files:
-            self.add_config_file(cf)
+        pass
+        #!FIXME: need to name each config.
+        #if not config_parser.has_option('metaconfig', 'config-files'):
+        #    return
+        #
+        #config_files = config_parser.get('metaconfig', 'config-files').split()
+        #for cf in config_files:
+        #    self.add_config_file(cf)

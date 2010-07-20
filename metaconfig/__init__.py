@@ -122,6 +122,8 @@ def add_config_file(name, config, ConfigClass=None):
 
 
 def reset():
+    global _metaconfig
+
     log.warn("Reseting metaconfig.  Existing configs will remain.")
 
     _metaconfig = None

@@ -25,11 +25,7 @@ To get started with metaconfig just do:
   conf = metaconfig.get_config(__name__)
 
 conf will be a ConfigParser instance.  You can create a centralised
-config file in ~/.metaconfig.conf to configure multiple applications
-and libraries.  See the tests for examples.
-
-Note: I am still experimenting with this.  The API is liable to change
-without notice until version 0.2.
+config file to configure multiple applications and libraries.
 
 """
 

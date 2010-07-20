@@ -1,10 +1,11 @@
-User Interface
-==============
+Configuration Management Interface
+==================================
 
-So you want to start using metaconfig right now.  How do you set where
-your named configs come from?  The easiest way is to create a
-`metaconfig file`.  This is a :mod:`ConfigParser.ConfigParser`.
-Metaconfig will search the following locations until it finds the file:
+So you have a package that can be configured with metaconfig and you
+want to start using it right now.  How do you set where your named
+configs come from?  The easiest way is to create a `metaconfig file`.
+This is a :mod:`ConfigParser.ConfigParser`.  Metaconfig will search
+the following locations until it finds the file:
 
 1. The value of the ``METACONFIG_CONF`` environment variable if set.
 2. ``metaconfig.conf`` in the current directory.
@@ -49,7 +50,7 @@ Our first example
   ... b = baz
   ... """)
 
-Now retrieve the config.
+Somewhere else within your python code this configuration can be retrieved.
 
   >>> config = metaconfig.get_config('foo')
   >>> config.getint('bar', 'a')
@@ -58,6 +59,29 @@ Now retrieve the config.
   'baz'
 
 
+Of course you can define as many configs and sections within
+metaconfig as you like.
+
+  >>> reset("""
+  ... [metaconfig]
+  ... configs = foo bar
+  ...
+  ... [foo:sec1]
+  ... a = 42
+  ...
+  ... [foo:sec2]
+  ... a = 101
+  ...
+  ... [bar:sec1]
+  ... a = 999
+  ... """)
+  >>> foo_config = metaconfig.get_config('foo')
+  >>> foo_config.getint('sec1', 'a')
+  42
+  >>> foo_config.getint('sec2', 'a')
+  101
+  >>> bar_config = metaconfig.get_config('bar')
+  >>> bar_config.getint('sec1', 'a')
+  999
 
 
-  

@@ -6,23 +6,20 @@
 Welcome to metaconfig's documentation!
 ======================================
 
-Contents:
+Metaconfig is a library for making configuring python packages easy.
+It's aim is to allow package developers to write externally
+configurable code with minimal effort and to allow application
+developers and users the maximum flexibility in configuring python
+software.
 
 .. toctree::
    :maxdepth: 2
 
    dev_view.rst
    user_view.rst
-   app_view.rst
    reference.rst
    todo.rst
    
-
-Metaconfig is a library for making configuring python packages easy.
-It's aim is to allow package developers to write externally
-configurable code with minimal effort and to allow application
-developers and users the maximum flexibility in configuring python
-software.
 
 Indices and tables
 ==================

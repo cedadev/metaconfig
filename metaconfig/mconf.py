@@ -42,6 +42,9 @@ import sys
 import ConfigParser
 import re
 
+import logging
+log = logging.getLogger(__name__)
+
 class Error(Exception):
     pass
 
@@ -67,33 +70,77 @@ class MetaConfig(object):
         return self.add_config(name, conf)
 
     def add_config(self, name, config_parser):
-        self._configs[name] = config_parser
+        if name in self._configs:
+            Error("Config %s already exists" % name)
+        else:
+            self._configs[name] = config_parser
 
-    def get_config(self, name, ConfigClass=DEFAULT_CONFIG_PARSER):
+    def get_config(self, name, ConfigClass=DEFAULT_CONFIG_PARSER, inherit=True):
+        log.debug('Requested config %s, inherit=%s' % (name, inherit))
 
-        parts = name.split('.')
-        while parts:
-            name1 = '.'.join(parts)
-            try:
-                return self._configs[name1]
-            except KeyError:
-                parts = parts[:-1]
-        return ConfigClass()
-            
+        if inherit:
+            parts = name.split('.')
+            while parts:
+                name1 = '.'.join(parts)
+                log.debug("Looking for config %s" % name1)
+                try:
+                    config = self._configs[name1]
+                    log.debug("Selected config %s" % name1)
+                    return config
+                except KeyError:
+                    parts = parts[:-1]
+                    
+        if name in self._configs:
+            log.debug("Selecting config %s" % name)
+            return self._configs[name]
+        else:
+            config = self._configs[name] = ConfigClass()
+            log.debug("New config %s" % name)
+            return config
+        
+
     def clear(self):
         self._configs = {}
 
     @classmethod
-    def from_config(Class, config_parser):
-        mf = Class()
+    def from_config(klass, config_parser):
+        mf = klass()
+
+        mf._parse_nested_configs(config_parser)
+        mf._parse_external_configs(config_parser)
+
+        return mf
+
+    @classmethod
+    def from_config_file(klass, config_file):
+        cnf = DEFAULT_CONFIG_PARSER()
+        cnf.read(config_file)
+
+        return klass.from_config(cnf)
+
+    @classmethod
+    def from_config_fh(klass, config_fh):
+        cnf = DEFAULT_CONFIG_PARSER()
+        cnf.readfp(config_fh)
+        
+        return klass.from_config(cnf)
+
+
+        
+    def _parse_nested_configs(self, config_parser):
+        """
+        Parse configs embedded in the metaconfig file.
+        """
+        if not config_parser.has_option('metaconfig', 'configs'):
+            return
 
         configs = config_parser.get('metaconfig', 'configs').split()
         D = {}
         for section in config_parser.sections():
-            mo = re.match(r'(.*):(.*)', section)
+            mo = re.match(r'(.+?):(.*)', section)
             if not mo:
                 continue
-            
+
             prefix, ssec = mo.groups()
             D.setdefault(prefix, []).append(ssec)
 
@@ -103,21 +150,20 @@ class MetaConfig(object):
                 cp.add_section(ssec)
                 sec = '%s:%s' % (config, ssec)
                 for option in config_parser.options(sec):
-                    cp.set(ssec, option, config_parser.get(sec, option))
-            mf.add_config(config, cp)
+                    cp.set(ssec, option, config_parser.get(sec, option, 
+                                                           raw=True))
 
-        return mf
+            self.add_config(config, cp)
 
-    @classmethod
-    def from_config_file(Class, config_file):
-        cnf = DEFAULT_CONFIG_PARSER()
-        cnf.read(config_file)
-
-        return Class.from_config(cnf)
-
-    @classmethod
-    def from_config_fh(Class, config_fh):
-        raise NotImplementedError
-
-
-        
+    def _parse_external_configs(self, config_parser):
+        """
+        Parse external config files referenced in metaconfig.conf.
+        """
+        pass
+        #!FIXME: need to name each config.
+        #if not config_parser.has_option('metaconfig', 'config-files'):
+        #    return
+        #
+        #config_files = config_parser.get('metaconfig', 'config-files').split()
+        #for cf in config_files:
+        #    self.add_config_file(cf)

@@ -9,20 +9,26 @@
 import tempfile
 import os
 
-from test_metaconfig import _make_test_config
-from metaconfig import get_config, clear
+from test_metaconfig import _make_metaconfig
+from metaconfig import get_config, reset
 
 
 def setup():
     global config_file
 
     fd, config_file = tempfile.mkstemp()
-    conf = _make_test_config(x='1')
+    mconf = _make_metaconfig(x='1')
     fh = os.fdopen(fd, 'w')
-    conf.write(fh)
+    mconf.write(fh)
     fh.close()
 
+    os.environ['METACONFIG_CONF'] = config_file
+
 def teardown():
-    clear()
+    reset()
     os.remove(config_file)
 
+
+def test_1():
+    config = get_config('p1')
+    assert config.get('foo', 'a') == '42'

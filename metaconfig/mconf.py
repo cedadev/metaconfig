@@ -42,6 +42,9 @@ import sys
 import ConfigParser
 import re
 
+import logging
+log = logging.getLogger(__name__)
+
 class Error(Exception):
     pass
 
@@ -69,17 +72,30 @@ class MetaConfig(object):
     def add_config(self, name, config_parser):
         self._configs[name] = config_parser
 
-    def get_config(self, name, ConfigClass=DEFAULT_CONFIG_PARSER):
+    def get_config(self, name, ConfigClass=DEFAULT_CONFIG_PARSER, inherit=True):
+        log.debug('Requested config %s, inherit=%s' % (name, inherit))
 
-        parts = name.split('.')
-        while parts:
-            name1 = '.'.join(parts)
-            try:
-                return self._configs[name1]
-            except KeyError:
-                parts = parts[:-1]
-        return ConfigClass()
-            
+        if inherit:
+            parts = name.split('.')
+            while parts:
+                name1 = '.'.join(parts)
+                log.debug("Looking for config %s" % name1)
+                try:
+                    config = self._configs[name1]
+                    log.debug("Selected config %s" % name1)
+                    return config
+                except KeyError:
+                    parts = parts[:-1]
+                    
+        if name in self._configs:
+            log.debug("Selecting config %s" % name)
+            return self._configs[name]
+        else:
+            config = self._configs[name] = ConfigClass()
+            log.debug("New config %s" % name)
+            return config
+        
+
     def clear(self):
         self._configs = {}
 

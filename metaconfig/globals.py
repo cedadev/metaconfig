@@ -40,8 +40,8 @@ def reload():
         _metaconfig = MetaConfig.from_config_file(_metaconfig_file)
 
 
-def get_config(name):
-    return _metaconfig.get_config(name)
+def get_config(name, inherit=True):
+    return _metaconfig.get_config(name, inherit=inherit)
 
 def add_config(name, config_parser):
     return _metaconfig.add_config(name, config_parser)

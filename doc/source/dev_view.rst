@@ -56,3 +56,10 @@ new one will be created::
   >>> myconfig2 = metaconfig.get_config('myroot.sub2', inherit=False)
   >>> myconfig2.sections()
   []
+
+If you need to know exactly where your config has come from use the ``__config_name__`` attribute::
+
+  >>> myconfig.__config_name__
+  'myroot'
+  >>> myconfig2.__config_name__
+  'myroot.sub2'

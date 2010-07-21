@@ -11,6 +11,7 @@ State global to the whole package.
 """
 
 import sys, re, os
+from ConfigParser import ConfigParser
 
 from metaconfig.mconf import MetaConfig, Error
 
@@ -44,6 +45,18 @@ def init_from_config(config):
         raise Exception("Metaconfig is already initialised")
 
     _metaconfig = MetaConfig.from_config(config)
+
+def init_from_string(config_str):
+    """
+    Initialise metaconfig from a string.
+
+    An exception will be raised if metaconfig has already been initialised.
+
+    """
+    from StringIO import StringIO
+    mconf = ConfigParser()
+    mconf.readfp(StringIO(config_str))
+    init_from_config(mconf)
 
 def init(search_path=None):
     """

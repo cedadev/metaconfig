@@ -73,7 +73,10 @@ class MetaConfig(object):
         if name in self._configs:
             Error("Config %s already exists" % name)
         else:
+            config_parser.__config_name__ = name
             self._configs[name] = config_parser
+
+        return config_parser
 
     def get_config(self, name, ConfigClass=DEFAULT_CONFIG_PARSER, inherit=True):
         log.debug('Requested config %s, inherit=%s' % (name, inherit))
@@ -94,13 +97,10 @@ class MetaConfig(object):
             log.debug("Selecting config %s" % name)
             return self._configs[name]
         else:
-            config = self._configs[name] = ConfigClass()
+            config = self.add_config(name, ConfigClass())
             log.debug("New config %s" % name)
             return config
         
-
-    def clear(self):
-        self._configs = {}
 
     @classmethod
     def from_config(klass, config_parser):

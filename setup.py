@@ -8,7 +8,7 @@
 from setuptools import setup, find_packages
 import sys, os
 
-__version__ = '0.1.2'
+__version__ = '0.1.3'
 __description__ = """
 
 Metaconfig
@@ -19,13 +19,15 @@ files.  It is inspired by the logging module where it is increadibly
 easy to start writing code that depends on logging whilst deferring
 how log messages will be handled until later.
 
-To get started with metaconfig just do:
+To get started with metaconfig just do::
 
   import metaconfig
   conf = metaconfig.get_config(__name__)
 
 conf will be a ConfigParser instance.  You can create a centralised
 config file to configure multiple applications and libraries.
+
+Further documentation is available at http://packages.python.org/metaconfig/.
 
 """
 

@@ -27,21 +27,13 @@ of config names.  For each config name the section
 ``<name>:<section>`` must be defined which corresponds to the section
 ``<section>`` of config ``<name>``.
 
-In the example below we define a function for bootstraping metaconfig
-without writing out a ``metaconfig.conf`` file.
+We can demonstrate this using the function
+:mod:`metaconfig.init_from_string` to initialise metaconfig without
+writing the config file.
 
   >>> import metaconfig
-  >>> from ConfigParser import ConfigParser
-  >>> from StringIO import StringIO
-  >>> def reset(config_str):
-  ...     metaconfig.reset()
-  ...     mconf = ConfigParser()
-  ...     mconf.readfp(StringIO(config_str))
-  ...	  metaconfig.init_from_config(mconf)
-  
-Our first example
-
-  >>> reset("""
+  >>> metaconfig.reset()
+  >>> metaconfig.init_from_string("""
   ... [metaconfig]
   ... configs = foo
   ...
@@ -62,7 +54,8 @@ Somewhere else within your python code this configuration can be retrieved.
 Of course you can define as many configs and sections within
 metaconfig as you like.
 
-  >>> reset("""
+  >>> metaconfig.reset()
+  >>> metaconfig.init_from_string("""
   ... [metaconfig]
   ... configs = foo bar
   ...

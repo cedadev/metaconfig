@@ -27,6 +27,7 @@ To get started with metaconfig just do:
 conf will be a ConfigParser instance.  You can create a centralised
 config file to configure multiple applications and libraries.
 
+
 """
 
 setup(name='metaconfig',

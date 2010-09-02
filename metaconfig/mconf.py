@@ -43,6 +43,7 @@ import ConfigParser
 import re
 
 import logging
+import logging.config
 log = logging.getLogger(__name__)
 
 class Error(Exception):
@@ -56,6 +57,7 @@ class MetaConfig(object):
 
     def add_config_file(self, name, path, ConfigClass=DEFAULT_CONFIG_PARSER):
 
+        log.info('Adding config %s from path %s' % (name, path)) 
         conf = ConfigClass()
         conf.read([path])
 
@@ -64,6 +66,7 @@ class MetaConfig(object):
 
     def add_config_fh(self, name, fileobj, ConfigClass=DEFAULT_CONFIG_PARSER):
 
+        log.info('Adding config %s from file object' % name)
         conf = ConfigClass()
         conf.readfp(fileobj)
 
@@ -75,6 +78,8 @@ class MetaConfig(object):
         else:
             config_parser.__config_name__ = name
             self._configs[name] = config_parser
+
+        log.info('Config %s added' % name)
 
         return config_parser
 
@@ -106,6 +111,7 @@ class MetaConfig(object):
     def from_config(klass, config_parser):
         mf = klass()
 
+        mf._setup_logging(config_parser)
         mf._parse_nested_configs(config_parser)
         mf._parse_external_configs(config_parser)
 
@@ -174,3 +180,15 @@ class MetaConfig(object):
         #config_files = config_parser.get('metaconfig', 'config-files').split()
         #for cf in config_files:
         #    self.add_config_file(cf)
+
+    def _setup_logging(self, config_parser):
+        """
+        Initialise logging from a nested config.
+
+        """
+        if not config_parser.has_option('metaconfig', 'logging'):
+            return
+
+        logging_file = config_parser.get('metaconfig', 'logging')
+        logging.config.fileConfig(logging_file)
+        log.info('Logging configuration initialised from %s' % logging_file)

@@ -78,3 +78,36 @@ metaconfig as you like.
   999
 
 
+Handling of the DEFAULT section
+-------------------------------
+
+The DEFAULT section works as you would expect per config.  Notice
+options defined in the top-level DEFAULT section will propagate to all
+configs defined in that file.
+
+  >>> metaconfig.reset()
+  >>> metaconfig.init_from_string("""
+  ... [DEFAULT]
+  ... c = 99
+  ...
+  ... [metaconfig]
+  ... configs = foo
+  ...
+  ... [foo:DEFAULT]
+  ... a = 1
+  ... b = 2
+  ...
+  ... [foo:bar]
+  ... a = 3
+  ... """)
+  >>> foo_config = metaconfig.get_config('foo')
+  >>> foo_config.getint('bar', 'a')
+  3
+  >>> foo_config.getint('bar', 'b')
+  2
+  >>> foo_config.getint('bar', 'c')
+  99
+
+
+
+

@@ -137,21 +137,28 @@ class MetaConfig(object):
         configs = config_parser.get('metaconfig', 'configs').split()
         D = {}
         for section in config_parser.sections():
-            mo = re.match(r'(.+?):(.*)', section)
+            mo = re.match(r'(.+?):(.+)', section)
             if not mo:
                 continue
-
             prefix, ssec = mo.groups()
             D.setdefault(prefix, []).append(ssec)
 
+
         for config in configs:
-            cp = ConfigParser.ConfigParser()
+            cp = DEFAULT_CONFIG_PARSER()
             for ssec in D[config]:
-                cp.add_section(ssec)
                 sec = '%s:%s' % (config, ssec)
-                for option in config_parser.options(sec):
-                    cp.set(ssec, option, config_parser.get(sec, option, 
-                                                           raw=True))
+
+                if ssec.lower() == 'default':
+                    defaults = cp.defaults()
+                    for option in config_parser.options(sec):
+                        defaults[option] = config_parser.get(sec, option,
+                                                             raw=True)
+                else:
+                    cp.add_section(ssec)
+                    for option in config_parser.options(sec):
+                        cp.set(ssec, option, config_parser.get(sec, option, 
+                                                               raw=True))
 
             self.add_config(config, cp)
 

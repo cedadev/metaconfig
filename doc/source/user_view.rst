@@ -109,5 +109,62 @@ configs defined in that file.
   99
 
 
+Configuring logging
+-------------------
 
+You can bootstrap your logging configuration from your metaconfig file
+using the ``logging`` option.  This option provides the path to a
+separate logging configuration file.
 
+For instance create a logging configuration file as documented in the
+logging module
+
+  >>> import tempfile
+  >>> logging_fh = tempfile.NamedTemporaryFile()
+  >>> logging_fh.write("""
+  ... [loggers]
+  ... keys=root,metaconfig
+  ...
+  ... [handlers]
+  ... keys=hand01
+  ... 
+  ... [formatters]
+  ... keys=form01
+  ... 
+  ... # No catch-all logging
+  ... [logger_root]
+  ... handlers=
+  ... 
+  ... [logger_metaconfig]
+  ... qualname=metaconfig
+  ... level=DEBUG
+  ... handlers=hand01
+  ... 
+  ... [handler_hand01]
+  ... class=StreamHandler
+  ... args=(sys.stdout, )
+  ... formatter=form01
+  ... 
+  ... [formatter_form01]
+  ... format=[%(levelname)s] %(name)s: %(message)s
+  ... """)
+  >>> logging_fh.flush()
+
+Now reference the logging file in metaconfig.conf.
+
+  >>> metaconfig.reset()
+  >>> metaconfig.init_from_string("""
+  ... [metaconfig]
+  ... logging = %s
+  ... configs = foo
+  ...
+  ... [foo:bar]
+  ... a = 42
+  ... b = baz
+  ... """ % logging_fh.name) # doctest:+ELLIPSIS
+  [INFO] metaconfig.mconf: Logging configuration initialised from /tmp/...
+  [INFO] metaconfig.mconf: Config foo added
+  >>> conf = metaconfig.get_config('foo')
+  [DEBUG] metaconfig.mconf: Requested config foo, inherit=True
+  [DEBUG] metaconfig.mconf: Looking for config foo
+  [DEBUG] metaconfig.mconf: Selected config foo

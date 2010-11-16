@@ -14,6 +14,7 @@ import sys, re, os
 from ConfigParser import ConfigParser
 
 from metaconfig.mconf import MetaConfig, Error
+from metaconfig.decorator import ConfigDecorator
 
 import logging
 log = logging.getLogger(__name__)

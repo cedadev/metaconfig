@@ -58,9 +58,7 @@ c = yes
 def _make_metaconfig(**kwargs):
     args = '\n'.join('%s = %s' % (k, kwargs[k]) for k in kwargs)
     text = _metaconfig_pat % args
-    fh = StringIO()
-    fh.write(text)
-    fh.seek(0)
+    fh = StringIO(text)
 
     mf = ConfigParser.ConfigParser()
     mf.readfp(fh)

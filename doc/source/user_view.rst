@@ -151,6 +151,48 @@ The config "foo" is now available
   default_text
   
 
+Including other metaconfig files
+--------------------------------
+
+The root metaconfig file can reference other metaconfign files to be
+included.  This is different from referencing external configs as the
+metaconfig syntax is applied to the included file.  The semantics
+follows the ConfigParser.read method.  The "include" option is a
+space-separated list of metaconfig files.
+
+
+  >>> metaconfig.reset()
+  >>> import tempfile
+  >>> mconf_fh = tempfile.NamedTemporaryFile()
+  >>> mconf_fh.write("""
+  ... [metaconfig]
+  ... configs = foo
+  ...
+  ... [foo:bar]
+  ... a = 42
+  ... b = baz
+  ... """)
+  >>> mconf_fh.flush()
+  >>> metaconfig.init_from_string("""
+  ... [metaconfig]
+  ... configs = foo
+  ... include = %s
+  ...
+  ... [foo:bar]
+  ... a = 99
+  ... c = woz
+  ... """ % mconf_fh.name)
+
+Included files override the settings
+
+  >>> config = metaconfig.get_config('foo')
+  >>> config.getint('bar', 'a')
+  42
+  >>> print config.get('bar', 'b')
+  baz
+  >>> print config.get('bar', 'c')
+  woz
+
 Configuring logging
 -------------------
 

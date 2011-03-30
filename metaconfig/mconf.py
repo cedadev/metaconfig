@@ -111,6 +111,7 @@ class MetaConfig(object):
     def from_config(klass, config_parser):
         mf = klass()
 
+        mf._setup_includes(config_parser)
         mf._setup_logging(config_parser)
         mf._parse_nested_configs(config_parser)
         mf._parse_external_configs(config_parser)
@@ -180,6 +181,18 @@ class MetaConfig(object):
             filename = config_parser.get(secname, opt)
             self.add_config_file(opt, filename)
     
+
+    def _setup_includes(self, config_parser):
+        """
+        Include external metaconfig files.
+
+        """
+        if not config_parser.has_option('metaconfig', 'include'):
+            return
+
+        includes = config_parser.get('metaconfig', 'include').split()
+
+        config_parser.read(includes)
 
     def _setup_logging(self, config_parser):
         """

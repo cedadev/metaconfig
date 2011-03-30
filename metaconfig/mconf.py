@@ -179,6 +179,8 @@ class MetaConfig(object):
         secname = config_parser.get('metaconfig', 'config-files')
         for opt in config_parser.options(secname):
             filename = config_parser.get(secname, opt)
+            log.info('Reading external config %s from file %s' %
+                     (opt, filename))
             self.add_config_file(opt, filename)
     
 
@@ -191,8 +193,10 @@ class MetaConfig(object):
             return
 
         includes = config_parser.get('metaconfig', 'include').split()
-
-        config_parser.read(includes)
+        for include in includes:
+            log.info("Including metaconfig: %s" % include)
+            config_parser.read(include)
+                     
 
     def _setup_logging(self, config_parser):
         """

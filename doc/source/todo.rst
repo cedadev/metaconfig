@@ -6,7 +6,6 @@ For 0.1.4
 
 * Manipulation of sys.path within metaconfig.conf
 * Including other metaconfig files from ``metaconfig.conf``
-* Include configs in separate files
 
 
 For 0.2

@@ -172,14 +172,14 @@ class MetaConfig(object):
         """
         Parse external config files referenced in metaconfig.conf.
         """
-        pass
-        #!FIXME: need to name each config.
-        #if not config_parser.has_option('metaconfig', 'config-files'):
-        #    return
-        #
-        #config_files = config_parser.get('metaconfig', 'config-files').split()
-        #for cf in config_files:
-        #    self.add_config_file(cf)
+        if not config_parser.has_option('metaconfig', 'config-files'):
+            return
+
+        secname = config_parser.get('metaconfig', 'config-files')
+        for opt in config_parser.options(secname):
+            filename = config_parser.get(secname, opt)
+            self.add_config_file(opt, filename)
+    
 
     def _setup_logging(self, config_parser):
         """

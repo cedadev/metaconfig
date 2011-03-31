@@ -6,7 +6,6 @@ For 0.1.4
 
 * Manipulation of sys.path within metaconfig.conf
 
-
 For 0.2
 -------
 

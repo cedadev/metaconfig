@@ -17,6 +17,7 @@ software.
 
    dev_view.rst
    user_view.rst
+   frameworks.rst
    reference.rst
    todo.rst
    

@@ -52,7 +52,9 @@ setup(name='metaconfig',
       install_requires=[
           # -*- Extra requirements: -*-
       ],
-      entry_points= {
-        },
+      entry_points= """
+        [paste.filter_factory]
+        main = metaconfig.wsgi:filter_factory
+        """,
       test_suite='nose.collector',
       )

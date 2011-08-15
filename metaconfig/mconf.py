@@ -38,7 +38,7 @@ or something like that
 
 """
 
-import sys
+import sys, os
 import ConfigParser
 import re
 
@@ -173,6 +173,7 @@ class MetaConfig(object):
         Parse external config files referenced in metaconfig.conf.
         """
         pass
+        #!TODO: Remember to expanduser!
         #!FIXME: need to name each config.
         #if not config_parser.has_option('metaconfig', 'config-files'):
         #    return
@@ -190,5 +191,7 @@ class MetaConfig(object):
             return
 
         logging_file = config_parser.get('metaconfig', 'logging')
+        logging_file = os.path.expanduser(logging_file)
+
         logging.config.fileConfig(logging_file)
         log.info('Logging configuration initialised from %s' % logging_file)

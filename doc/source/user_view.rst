@@ -32,6 +32,7 @@ We can demonstrate this using the function
 writing the config file.
 
   >>> import metaconfig
+  >>> import tempfile
   >>> metaconfig.reset()
   >>> metaconfig.init_from_string("""
   ... [metaconfig]
@@ -108,6 +109,89 @@ configs defined in that file.
   >>> foo_config.getint('bar', 'c')
   99
 
+Referencing external config files
+---------------------------------
+
+Individual configs can be referenced in separate files by specifying a section
+that maps config names to files.
+
+  >>> metaconfig.reset()
+  >>> import tempfile
+  >>> conf_fh = tempfile.NamedTemporaryFile()
+  >>> conf_fh.write("""
+  ... [DEFAULT]
+  ... y = default_text
+  ... 
+  ... [sec_a]
+  ... x = 99
+  ... y = some_text
+  ... 
+  ... [sec_b]
+  ... x = 22
+  ... """)
+  >>> conf_fh.flush()
+  >>> metaconfig.init_from_string("""
+  ... [metaconfig]
+  ... config-files = myconfigs
+  ... 
+  ... [myconfigs]
+  ... foo = %s
+  ... """ % conf_fh.name)
+
+The config "foo" is now available
+
+  >>> config = metaconfig.get_config('foo')
+  >>> config.getint('sec_a', 'x')
+  99
+  >>> print config.get('sec_a', 'y')
+  some_text
+  >>> config.getint('sec_b', 'x')
+  22
+  >>> print config.get('sec_b', 'y')
+  default_text
+  
+
+Including other metaconfig files
+--------------------------------
+
+The root metaconfig file can reference other metaconfign files to be
+included.  This is different from referencing external configs as the
+metaconfig syntax is applied to the included file.  The semantics
+follows the ConfigParser.read method.  The "include" option is a
+space-separated list of metaconfig files.
+
+
+  >>> metaconfig.reset()
+  >>> import tempfile
+  >>> mconf_fh = tempfile.NamedTemporaryFile()
+  >>> mconf_fh.write("""
+  ... [metaconfig]
+  ... configs = foo
+  ...
+  ... [foo:bar]
+  ... a = 42
+  ... b = baz
+  ... """)
+  >>> mconf_fh.flush()
+  >>> metaconfig.init_from_string("""
+  ... [metaconfig]
+  ... configs = foo
+  ... include = %s
+  ...
+  ... [foo:bar]
+  ... a = 99
+  ... c = woz
+  ... """ % mconf_fh.name)
+
+Included files override the settings
+
+  >>> config = metaconfig.get_config('foo')
+  >>> config.getint('bar', 'a')
+  42
+  >>> print config.get('bar', 'b')
+  baz
+  >>> print config.get('bar', 'c')
+  woz
 
 Configuring logging
 -------------------

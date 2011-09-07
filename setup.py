@@ -8,7 +8,7 @@
 from setuptools import setup, find_packages
 import sys, os
 
-__version__ = '0.1.3'
+__version__ = '0.1.4a2'
 __description__ = """
 
 Metaconfig
@@ -52,7 +52,9 @@ setup(name='metaconfig',
       install_requires=[
           # -*- Extra requirements: -*-
       ],
-      entry_points= {
-        },
+      entry_points= """
+        [paste.filter_factory]
+        main = metaconfig.wsgi:filter_factory
+        """,
       test_suite='nose.collector',
       )

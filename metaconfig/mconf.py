@@ -111,6 +111,7 @@ class MetaConfig(object):
     def from_config(klass, config_parser):
         mf = klass()
 
+        mf._setup_includes(config_parser)
         mf._setup_logging(config_parser)
         mf._parse_nested_configs(config_parser)
         mf._parse_external_configs(config_parser)
@@ -172,15 +173,30 @@ class MetaConfig(object):
         """
         Parse external config files referenced in metaconfig.conf.
         """
-        pass
-        #!TODO: Remember to expanduser!
-        #!FIXME: need to name each config.
-        #if not config_parser.has_option('metaconfig', 'config-files'):
-        #    return
-        #
-        #config_files = config_parser.get('metaconfig', 'config-files').split()
-        #for cf in config_files:
-        #    self.add_config_file(cf)
+        if not config_parser.has_option('metaconfig', 'config-files'):
+            return
+
+        secname = config_parser.get('metaconfig', 'config-files')
+        for opt in config_parser.options(secname):
+            filename = config_parser.get(secname, opt)
+            log.info('Reading external config %s from file %s' %
+                     (opt, filename))
+            self.add_config_file(opt, filename)
+    
+
+    def _setup_includes(self, config_parser):
+        """
+        Include external metaconfig files.
+
+        """
+        if not config_parser.has_option('metaconfig', 'include'):
+            return
+
+        includes = config_parser.get('metaconfig', 'include').split()
+        for include in includes:
+            log.info("Including metaconfig: %s" % include)
+            config_parser.read(include)
+                     
 
     def _setup_logging(self, config_parser):
         """

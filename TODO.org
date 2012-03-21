@@ -1,0 +1,3 @@
+
+* TODO fix relative paths in metaconfig.conf and logging.conf
+* TODO warn user if METACONFIG_CONF is defined but invalid (non-existant file)
